@@ -80,6 +80,9 @@ jobs:
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
 
+    - name: Install adguardhome
+      run: cd openwrt && git clone  https://github.com/rufengsuixing/luci-app-adguardhome package/lean/adguardhome
+
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files

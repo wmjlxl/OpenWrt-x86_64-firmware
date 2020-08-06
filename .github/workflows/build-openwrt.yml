@@ -81,7 +81,46 @@ jobs:
       run: cd openwrt && ./scripts/feeds install -a
 
     - name: Install adguardhome
-      run: cd openwrt && git clone  https://github.com/rufengsuixing/luci-app-adguardhome package/lean/adguardhome
+      run: cd openwrt && git clone https://github.com/rufengsuixing/luci-app-adguardhome package/lean/adguardhome
+
+    - name: Install node-request
+      run: cd openwrt && git clone https://github.com/jerrykuku/node-request.git package/lean/node-request
+
+    - name: Install jd-dailybonus
+      run: cd openwrt && git clone https://github.com/jerrykuku/luci-app-jd-dailybonus.git package/lean/luci-app-jd-dailybonus
+
+    - name: Install openclash
+      run: |
+        cd openwrt
+        mkdir package/luci-app-openclash
+        cd package/luci-app-openclash
+        git init
+        git remote add -f origin https://github.com/vernesong/OpenClash.git
+        git config core.sparsecheckout true
+        echo "luci-app-openclash" >> .git/info/sparse-checkout
+        git pull origin master
+        git branch --set-upstream-to=origin/master master
+
+    - name: Install smartdns
+      run: |
+        cd openwrt
+        WORKINGDIR="`pwd`/feeds/packages/net/smartdns"
+        mkdir $WORKINGDIR -p
+        rm $WORKINGDIR/* -fr
+        wget https://github.com/pymumu/openwrt-smartdns/archive/master.zip -O $WORKINGDIR/master.zip
+        unzip $WORKINGDIR/master.zip -d $WORKINGDIR
+        mv $WORKINGDIR/openwrt-smartdns-master/* $WORKINGDIR/
+        rmdir $WORKINGDIR/openwrt-smartdns-master
+        rm $WORKINGDIR/master.zip
+        LUCIBRANCH="lede"
+        WORKINGDIR="`pwd`/feeds/luci/applications/luci-app-smartdns"
+        mkdir $WORKINGDIR -p
+        rm $WORKINGDIR/* -fr
+        wget https://github.com/pymumu/luci-app-smartdns/archive/${LUCIBRANCH}.zip -O $WORKINGDIR/${LUCIBRANCH}.zip
+        unzip $WORKINGDIR/${LUCIBRANCH}.zip -d $WORKINGDIR
+        mv $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}/* $WORKINGDIR/
+        rmdir $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}
+        rm $WORKINGDIR/${LUCIBRANCH}.zip
 
     - name: Load custom configuration
       run: |

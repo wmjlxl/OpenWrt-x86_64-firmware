@@ -30,7 +30,7 @@ on:
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: master
+  REPO_BRANCH: main
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: .config
   DIY_P1_SH: diy-part1.sh
@@ -101,28 +101,28 @@ jobs:
         git pull origin master
         git branch --set-upstream-to=origin/master master
 
-#    - name: Install smartdns
-#      run: |
-#        cd openwrt
-#        WORKINGDIR="/workdir/openwrt/feeds/packages/net/smartdns"
-#        mkdir $WORKINGDIR -p
-#        rm $WORKINGDIR/* -fr
-#        wget https://github.com/pymumu/openwrt-smartdns/archive/master.zip -O $WORKINGDIR/master.zip
-#        unzip $WORKINGDIR/master.zip -d $WORKINGDIR
-#        mv $WORKINGDIR/openwrt-smartdns-master/* $WORKINGDIR/
-#        rmdir $WORKINGDIR/openwrt-smartdns-master
-#        rm $WORKINGDIR/master.zip
-#        LUCIBRANCH="lede"
-#        WORKINGDIR="/workdir/openwrt/feeds/luci/applications/luci-app-smartdns"
-#        mkdir $WORKINGDIR -p
-#        rm $WORKINGDIR/* -fr
-#        wget https://github.com/pymumu/luci-app-smartdns/archive/${LUCIBRANCH}.zip -O $WORKINGDIR/${LUCIBRANCH}.zip
-#        unzip $WORKINGDIR/${LUCIBRANCH}.zip -d $WORKINGDIR
-#        mv $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}/* $WORKINGDIR/
-#        rmdir $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}
-#        rm $WORKINGDIR/${LUCIBRANCH}.zip
-#        ./scripts/feeds update luci -a
-#        ./scripts/feeds install -a
+    - name: Install smartdns
+      run: |
+        cd openwrt
+        WORKINGDIR="/workdir/openwrt/feeds/packages/net/smartdns"
+        mkdir $WORKINGDIR -p
+        rm $WORKINGDIR/* -fr
+        wget https://github.com/pymumu/openwrt-smartdns/archive/master.zip -O $WORKINGDIR/master.zip
+        unzip $WORKINGDIR/master.zip -d $WORKINGDIR
+        mv $WORKINGDIR/openwrt-smartdns-master/* $WORKINGDIR/
+        rmdir $WORKINGDIR/openwrt-smartdns-master
+        rm $WORKINGDIR/master.zip
+        LUCIBRANCH="lede"
+        WORKINGDIR="/workdir/openwrt/feeds/luci/applications/luci-app-smartdns"
+        mkdir $WORKINGDIR -p
+        rm $WORKINGDIR/* -fr
+        wget https://github.com/pymumu/luci-app-smartdns/archive/${LUCIBRANCH}.zip -O $WORKINGDIR/${LUCIBRANCH}.zip
+        unzip $WORKINGDIR/${LUCIBRANCH}.zip -d $WORKINGDIR
+        mv $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}/* $WORKINGDIR/
+        rmdir $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}
+        rm $WORKINGDIR/${LUCIBRANCH}.zip
+        ./scripts/feeds update luci -a
+        ./scripts/feeds install -a
 
     - name: Load custom configuration
       run: |

@@ -1,10 +1,12 @@
-#=================================================
+#
+# Copyright (c) 2019-2020 P3TERX <https://p3terx.com>
+#
+# This is free software, licensed under the MIT License.
+# See /LICENSE for more information.
+#
 # https://github.com/P3TERX/Actions-OpenWrt
 # Description: Build OpenWrt using GitHub Actions
-# Lisence: MIT
-# Author: P3TERX
-# Blog: https://p3terx.com
-#=================================================
+#
 
 name: Build OpenWrt
 
@@ -14,13 +16,13 @@ on:
     types: published
   push:
     branches:
-      - master
+      - main
     paths:
       - '.config'
   schedule:
     - cron: 0 7 * * 4
-  watch:
-    types: started
+#  watch:
+#    types: started
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
@@ -29,11 +31,11 @@ env:
   CONFIG_FILE: .config
   DIY_P1_SH: diy-part1.sh
   DIY_P2_SH: diy-part2.sh
-  #SSH_ACTIONS: false
+  SSH_ACTIONS: false
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
-  UPLOAD_COWTRANSFER: true
-  UPLOAD_WETRANSFER: true
+  UPLOAD_COWTRANSFER: false
+  UPLOAD_WETRANSFER: false
   TZ: Asia/Shanghai
 
 jobs:
@@ -43,7 +45,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@main
 
     - name: Initialization environment
       env:
@@ -57,12 +59,14 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
+
     - name: Clone source code
       working-directory: /workdir
       run: |
         df -hT $PWD
         git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+
     - name: Load custom feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
@@ -70,55 +74,11 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
 
-    - name: Install adguardhome
-      run: cd openwrt && git clone https://github.com/rufengsuixing/luci-app-adguardhome package/lean/adguardhome
-
-    - name: Install node-request
-      run: cd openwrt && git clone https://github.com/jerrykuku/node-request.git package/lean/node-request
-
-    - name: Install jd-dailybonus
-      run: cd openwrt && git clone https://github.com/jerrykuku/luci-app-jd-dailybonus.git package/lean/luci-app-jd-dailybonus
-
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
 
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
-
- #   - name: Install openclash
- #     run: |
- #       cd openwrt
- #       mkdir package/luci-app-openclash
- #       cd package/luci-app-openclash
- #       git init
-#        git remote add -f origin https://github.com/vernesong/OpenClash.git
-#        git config core.sparsecheckout true
-#        echo "luci-app-openclash" >> .git/info/sparse-checkout
-#        git pull origin master
-#        git branch --set-upstream-to=origin/master master
-
-#    - name: Install smartdns
-#      run: |
-#        cd openwrt
-#        WORKINGDIR="/workdir/openwrt/feeds/packages/net/smartdns"
-#        mkdir $WORKINGDIR -p
-#        rm $WORKINGDIR/* -fr
-#        wget https://github.com/pymumu/openwrt-smartdns/archive/master.zip -O $WORKINGDIR/master.zip
-#        unzip $WORKINGDIR/master.zip -d $WORKINGDIR
-#        mv $WORKINGDIR/openwrt-smartdns-master/* $WORKINGDIR/
-#        rmdir $WORKINGDIR/openwrt-smartdns-master
-#        rm $WORKINGDIR/master.zip
-#        LUCIBRANCH="lede"
-#        WORKINGDIR="/workdir/openwrt/feeds/luci/applications/luci-app-smartdns"
-#        mkdir $WORKINGDIR -p
-#        rm $WORKINGDIR/* -fr
-#        wget https://github.com/pymumu/luci-app-smartdns/archive/${LUCIBRANCH}.zip -O $WORKINGDIR/${LUCIBRANCH}.zip
-#        unzip $WORKINGDIR/${LUCIBRANCH}.zip -d $WORKINGDIR
-#        mv $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}/* $WORKINGDIR/
-#        rmdir $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}
-#        rm $WORKINGDIR/${LUCIBRANCH}.zip
-#        ./scripts/feeds update luci -a
-#        ./scripts/feeds install -a
 
     - name: Load custom configuration
       run: |
@@ -127,9 +87,10 @@ jobs:
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
-    #- name: SSH connection to Actions
-    #  uses: P3TERX/debugger-action@master
-    #  if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
+
+#    - name: SSH connection to Actions
+#      uses: P3TERX/debugger-action@main
+#      if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
 
     - name: Download package
       id: package
@@ -139,6 +100,7 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
+
     - name: Compile the firmware
       id: compile
       run: |
@@ -149,12 +111,13 @@ jobs:
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "::set-env name=DEVICE_NAME::_$(cat DEVICE_NAME)"
         echo "::set-env name=FILE_DATE::_$(date +"%Y%m%d%H%M")"
+
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
 
     - name: Upload bin directory
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@main
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
       with:
         name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
@@ -168,8 +131,9 @@ jobs:
         rm -rf packages
         echo "::set-env name=FIRMWARE::$PWD"
         echo "::set-output name=status::success"
+
     - name: Upload firmware directory
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@main
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
         name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
@@ -181,6 +145,7 @@ jobs:
         curl -fsSL git.io/file-transfer | sh
         ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
         echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
+
     - name: Upload firmware to WeTransfer
       if: steps.organize.outputs.status == 'success' && env.UPLOAD_WETRANSFER == 'true' && !cancelled()
       run: |

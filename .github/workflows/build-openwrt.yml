@@ -69,11 +69,6 @@ jobs:
         chmod +x $DIY_P1_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
-    - name: Update feeds
-      run: cd openwrt && ./scripts/feeds update -a
-
-    - name: Install feeds
-      run: cd openwrt && ./scripts/feeds install -a
 
     - name: Install adguardhome
       run: cd openwrt && git clone https://github.com/rufengsuixing/luci-app-adguardhome package/lean/adguardhome
@@ -84,40 +79,46 @@ jobs:
     - name: Install jd-dailybonus
       run: cd openwrt && git clone https://github.com/jerrykuku/luci-app-jd-dailybonus.git package/lean/luci-app-jd-dailybonus
 
-    - name: Install openclash
-      run: |
-        cd openwrt
-        mkdir package/luci-app-openclash
-        cd package/luci-app-openclash
-        git init
-        git remote add -f origin https://github.com/vernesong/OpenClash.git
-        git config core.sparsecheckout true
-        echo "luci-app-openclash" >> .git/info/sparse-checkout
-        git pull origin master
-        git branch --set-upstream-to=origin/master master
+    - name: Update feeds
+      run: cd openwrt && ./scripts/feeds update -a
 
-    - name: Install smartdns
-      run: |
-        cd openwrt
-        WORKINGDIR="/workdir/openwrt/feeds/packages/net/smartdns"
-        mkdir $WORKINGDIR -p
-        rm $WORKINGDIR/* -fr
-        wget https://github.com/pymumu/openwrt-smartdns/archive/master.zip -O $WORKINGDIR/master.zip
-        unzip $WORKINGDIR/master.zip -d $WORKINGDIR
-        mv $WORKINGDIR/openwrt-smartdns-master/* $WORKINGDIR/
-        rmdir $WORKINGDIR/openwrt-smartdns-master
-        rm $WORKINGDIR/master.zip
-        LUCIBRANCH="lede"
-        WORKINGDIR="/workdir/openwrt/feeds/luci/applications/luci-app-smartdns"
-        mkdir $WORKINGDIR -p
-        rm $WORKINGDIR/* -fr
-        wget https://github.com/pymumu/luci-app-smartdns/archive/${LUCIBRANCH}.zip -O $WORKINGDIR/${LUCIBRANCH}.zip
-        unzip $WORKINGDIR/${LUCIBRANCH}.zip -d $WORKINGDIR
-        mv $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}/* $WORKINGDIR/
-        rmdir $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}
-        rm $WORKINGDIR/${LUCIBRANCH}.zip
-        ./scripts/feeds update luci -a
-        ./scripts/feeds install -a
+    - name: Install feeds
+      run: cd openwrt && ./scripts/feeds install -a
+
+ #   - name: Install openclash
+ #     run: |
+ #       cd openwrt
+ #       mkdir package/luci-app-openclash
+ #       cd package/luci-app-openclash
+ #       git init
+#        git remote add -f origin https://github.com/vernesong/OpenClash.git
+#        git config core.sparsecheckout true
+#        echo "luci-app-openclash" >> .git/info/sparse-checkout
+#        git pull origin master
+#        git branch --set-upstream-to=origin/master master
+
+#    - name: Install smartdns
+#      run: |
+#        cd openwrt
+#        WORKINGDIR="/workdir/openwrt/feeds/packages/net/smartdns"
+#        mkdir $WORKINGDIR -p
+#        rm $WORKINGDIR/* -fr
+#        wget https://github.com/pymumu/openwrt-smartdns/archive/master.zip -O $WORKINGDIR/master.zip
+#        unzip $WORKINGDIR/master.zip -d $WORKINGDIR
+#        mv $WORKINGDIR/openwrt-smartdns-master/* $WORKINGDIR/
+#        rmdir $WORKINGDIR/openwrt-smartdns-master
+#        rm $WORKINGDIR/master.zip
+#        LUCIBRANCH="lede"
+#        WORKINGDIR="/workdir/openwrt/feeds/luci/applications/luci-app-smartdns"
+#        mkdir $WORKINGDIR -p
+#        rm $WORKINGDIR/* -fr
+#        wget https://github.com/pymumu/luci-app-smartdns/archive/${LUCIBRANCH}.zip -O $WORKINGDIR/${LUCIBRANCH}.zip
+#        unzip $WORKINGDIR/${LUCIBRANCH}.zip -d $WORKINGDIR
+#        mv $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}/* $WORKINGDIR/
+#        rmdir $WORKINGDIR/luci-app-smartdns-${LUCIBRANCH}
+#        rm $WORKINGDIR/${LUCIBRANCH}.zip
+#        ./scripts/feeds update luci -a
+#        ./scripts/feeds install -a
 
     - name: Load custom configuration
       run: |
